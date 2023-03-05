@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Encryption & Decryption App</title>
+    <meta charset="UTF-8">
+    <meta name="author" content="Boobalan">
+    <meta name="description" content="This will give the user page for admin">
+    <meta http-equiv="content-security-policy" content="default-src 'self'">
+    <link href="static/styles/user.css" rel="stylesheet"/>
+</head>
+<body>
+<table class="user-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>UserType</th>
+        <th>Status</th>
+        <th>Domain</th>
+        <th>Purpose</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr>
+        <td>{{ user['Name'] }}</td>
+        <td>{{ user['Email'] }}</td>
+        <td>{{ user['UserType'] }}</td>
+        {% if user['IsActive'] %}
+                <td>Active</td>
+        {% else %}
+                <td>InActive</td>
+        {% endif %}
+        <td>{{ user['Domain'] }}</td>
+        <td>{{ user['Purpose'] }}</td>
+        <td>
+            <select>
+                <option value="Admin">Admin</option>
+                <option value="User" selected>User</option>
+            </select>
+            <button>Update</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>

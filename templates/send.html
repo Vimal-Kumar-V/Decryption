@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Encryption & Decryption App</title>
+    <meta charset="UTF-8">
+    <meta name="author" content="Boobalan">
+    <meta name="description" content="This will give the home page">
+    <meta http-equiv="content-security-policy" content="default-src 'self'">
+    <link href="static/styles/send.css" rel="stylesheet"/>
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="/home">Home</a></li>
+            {% if is_admin %}
+            <li><a href="/user">Users</a></li>
+            {% endif %}
+            <li><a href="/send">Share Files</a></li>
+            <li><a href="/active">Active Users</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+<form action="/share">
+  <label for="file-input">Choose a file:</label>
+  <input id="file-input" type="file" name="files" multiple>
+    <div class="container">
+        <p> Select Users</p>
+        <ul class="ks-cboxtags">
+        {% for user in (users) %}
+            <li><input type="checkbox" id="{{ user }}" value="{{ user }}" name ="{{ user }}"><label for="{{ user }}">{{ user }}</label></li>
+        {% endfor %}
+        </ul>
+        </div>
+    <button formmethod="post" type="submit">Share files</button>
+</form>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="20">
+            <item index="0" class="java.lang.String" itemvalue="google-cloud-bigquery" />
+            <item index="1" class="java.lang.String" itemvalue="dnspython" />
+            <item index="2" class="java.lang.String" itemvalue="pymongo" />
+            <item index="3" class="java.lang.String" itemvalue="firebase-admin" />
+            <item index="4" class="java.lang.String" itemvalue="marshmallow" />
+            <item index="5" class="java.lang.String" itemvalue="uWSGI" />
+            <item index="6" class="java.lang.String" itemvalue="google-cloud-storage" />
+            <item index="7" class="java.lang.String" itemvalue="requests" />
+            <item index="8" class="java.lang.String" itemvalue="apispec" />
+            <item index="9" class="java.lang.String" itemvalue="redis" />
+            <item index="10" class="java.lang.String" itemvalue="jinja2" />
+            <item index="11" class="java.lang.String" itemvalue="boto3" />
+            <item index="12" class="java.lang.String" itemvalue="jsonpath-ng" />
+            <item index="13" class="java.lang.String" itemvalue="google-cloud-pubsub" />
+            <item index="14" class="java.lang.String" itemvalue="aiohttp" />
+            <item index="15" class="java.lang.String" itemvalue="flatten_json" />
+            <item index="16" class="java.lang.String" itemvalue="cerberus" />
+            <item index="17" class="java.lang.String" itemvalue="pyjwt" />
+            <item index="18" class="java.lang.String" itemvalue="Flask" />
+            <item index="19" class="java.lang.String" itemvalue="google-api-core" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E231" />
+          <option value="E501" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N801" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="main.flask_sqlalchemy" />
+          <option value="flask_sqlalchemy.SQLAlchemy.Integer" />
+          <option value="flask_sqlalchemy.SQLAlchemy.String" />
+          <option value="flask_sqlalchemy.SQLAlchemy.*" />
+          <option value="services.invoice_service" />
+          <option value="dict.encode" />
+          <option value="base.service_requests" />
+          <option value="server.persistence.db.doc_wrapper.core" />
+          <option value="accounts.route.admin.*" />
+          <option value="route.admin.update_attachment_preference" />
+          <option value="route.admin.get_attachment_preference" />
+          <option value="services.admin_service.AdminService.AccountMeta" />
+          <option value="tests.new_test_revamp.test_000_utils.mock_generate_key" />
+          <option value="tests.TestBase" />
+          <option value="tests.new_test_revamp.test_000_utils.new_test_revamp" />
+          <option value="test_003_auth_service.base_service" />
+          <option value="error.error_codes.KISSFLOW_ERROR_02036" />
+          <option value="server.event.base_event.EventService.get_now" />
+          <option value="dict.json" />
+          <option value="migration.role_to_approle_user.RolesToAppRoles" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
