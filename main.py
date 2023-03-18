@@ -1,12 +1,26 @@
-from flask import Flask, render_template, session, g
+import os
+
+from bson.objectid import ObjectId
+from flask import Flask, render_template, session, g, Response
 from flask import request
+from gridfs import GridFS
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
-from werkzeug.utils import redirect
-import os
+from werkzeug.utils import redirect, secure_filename
+from werkzeug.routing import BaseConverter
+
+class ObjectIdConverter(BaseConverter):
+    def to_python(self, value):
+        return ObjectId(value)
+
+    def to_url(self, value):
+        return str(value)
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
+app.url_map.converters['ObjectId'] = ObjectIdConverter
+
 
 def get_db():
     client = app.config.get("client")
@@ -14,6 +28,12 @@ def get_db():
         client = app.config["client"] = MongoClient()
     user_database = client["user_db"]
     return user_database
+
+
+def get_gridfs():
+    db = get_db()
+    fs = GridFS(db)
+    return fs
 
 
 @app.route("/", methods=['GET'])
@@ -31,7 +51,7 @@ def validate_login():
         session['User'] = user.get('Name')
         session["Email"] = email
         is_admin = user["UserType"] == "Admin"
-        db.get_collection('User').update_one({"_id":email}, update={"$set":{"IsActive": True}})
+        db.get_collection('User').update_one({"_id": email}, update={"$set": {"IsActive": True}})
         return render_template("home.html", name=user.get('Name'), is_admin=is_admin)
     else:
         return render_template("login.html", error="Incorrect Email Id or Password")
@@ -89,7 +109,7 @@ def get_home_page():
         return render_template("login.html", error="Session Expired")
     else:
         db = get_db()
-        user = db.get_collection("User").find_one({"_id":session["Email"]})
+        user = db.get_collection("User").find_one({"_id": session["Email"]})
         is_admin = user.get("UserType") == "Admin"
         return render_template("home.html", name=g.user, is_admin=is_admin)
 
@@ -100,7 +120,7 @@ def logout():
     email = session.pop("Email", None)
     db = get_db()
     if email:
-        db.get_collection('User').update_one({"_id": email}, update={"$set":{"IsActive": False}})
+        db.get_collection('User').update_one({"_id": email}, update={"$set": {"IsActive": False}})
     return render_template("login.html", error="Logged Out Successfully")
 
 
@@ -118,19 +138,29 @@ def get_users():
     if not g.user:
         return render_template("login.html", error="Session Expired")
     db = get_db()
-    users = list(db.get_collection('User').find({},{"_id":1}))
+    users = list(db.get_collection('User').find({}, {"_id": 1}))
     users = [user["_id"] for user in users]
     return render_template("send.html", users=users)
 
 
 @app.route("/share", methods=["GET", "POST"])
 def share_files():
+    if request.method == "GET":
+        return render_template("send.html", notification="success")
     if not g.user:
         return render_template("login.html", error="Session Expired")
-    args = request.form
-    files = args.pop("files")
-    emails = list(args.keys())
-    return "sucess"
+    users = request.form
+    users = list(users.values())
+    f = request.files.get("files")
+    fs = get_gridfs()
+    file_name = secure_filename(f.filename)
+    oid = fs.put(f, filename=file_name)
+    db = get_db()
+    users = list(db.get_collection('User').find({"_id": {"$in": users}}, {"_id": 1, "files": 1}))
+    for user_obj in users:
+        user_obj["files"] = (user_obj.get("files") or []) + [oid]
+        db.get_collection("User").update_one({"_id": user_obj["_id"]}, {"$set": {"files": user_obj["files"]}})
+    return redirect("/share")
 
 
 @app.route("/user", methods=["GET", "POST"])
@@ -138,6 +168,36 @@ def get_user_management():
     db = get_db()
     users = list(db.get_collection('User').find({}))
     return render_template("users.html", users=users)
+
+
+@app.route('/files', methods=["GET", "POST"])
+def get_files():
+    if not g.user:
+        return render_template("login.html", error="Session Expired")
+    fs = get_gridfs()
+    db = get_db()
+    user_obj = db.get_collection("User").find_one({"_id": session["Email"]}, {"files": 1})
+    file_list = []
+    if user_obj.get("files"):
+        for file in fs.find():
+            file_list.append({
+                'filename': file.filename,
+                'length': file.length,
+                'upload_date': file.upload_date,
+                '_id': file._id
+            })
+    return render_template('files.html', files=file_list)
+
+
+@app.route('/download_file/<ObjectId:file_id>')
+def download_file(file_id):
+    fs = get_gridfs()
+    file = fs.get(file_id)
+    response = Response(file.read())
+    response.headers['Content-Disposition'] = 'attachment; filename=' + file.filename
+    response.headers['Content-Type'] = file.content_type
+    return response
+
 
 @app.before_request
 def before_request():
@@ -155,4 +215,5 @@ if __name__ == '__main__':
                       "Password": "boobalan@123", "Domain": "Education", "Name": "Boobalan", "Age": 23,
                       "Gender": "Male"}
         collection.insert_one(document=admin_user)
+        collection.find_one()
     app.run(debug=True)
