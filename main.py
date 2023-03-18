@@ -1,7 +1,7 @@
 import os
 
 from bson.objectid import ObjectId
-from flask import Flask, render_template, session, g, Response
+from flask import Flask, render_template, session, g, Response, url_for
 from flask import request
 from gridfs import GridFS
 from pymongo import MongoClient
@@ -142,11 +142,8 @@ def get_users():
     users = [user["_id"] for user in users]
     return render_template("send.html", users=users)
 
-
-@app.route("/share", methods=["GET", "POST"])
+@app.route("/share", methods=["POST"])
 def share_files():
-    if request.method == "GET":
-        return render_template("send.html", notification="success")
     if not g.user:
         return render_template("login.html", error="Session Expired")
     users = request.form
@@ -156,11 +153,15 @@ def share_files():
     file_name = secure_filename(f.filename)
     oid = fs.put(f, filename=file_name)
     db = get_db()
+
     users = list(db.get_collection('User').find({"_id": {"$in": users}}, {"_id": 1, "files": 1}))
     for user_obj in users:
-        user_obj["files"] = (user_obj.get("files") or []) + [oid]
+        user_obj["files"] = user_obj.get("files") or []
+        user_obj["files"].append([oid, session["Email"]])
         db.get_collection("User").update_one({"_id": user_obj["_id"]}, {"$set": {"files": user_obj["files"]}})
-    return redirect("/share")
+    users = list(db.get_collection('User').find({}, {"_id": 1}))
+    users = [user["_id"] for user in users]
+    return render_template("send.html", users=users)
 
 
 @app.route("/user", methods=["GET", "POST"])
@@ -178,14 +179,21 @@ def get_files():
     db = get_db()
     user_obj = db.get_collection("User").find_one({"_id": session["Email"]}, {"files": 1})
     file_list = []
+    print(user_obj)
+    file_ids = [file[0] for file in user_obj["files"]]
+    file_sender_dict = {file[0]: file[1] for file in user_obj["files"]}
+    print(file_ids)
+    print(file_sender_dict)
     if user_obj.get("files"):
-        for file in fs.find():
+        for file in fs.find({"_id":{"$in":file_ids}}):
             file_list.append({
                 'filename': file.filename,
                 'length': file.length,
                 'upload_date': file.upload_date,
-                '_id': file._id
+                '_id': file._id,
+                'sender': file_sender_dict[file._id]
             })
+    print(file_list)
     return render_template('files.html', files=file_list)
 
 

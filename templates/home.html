@@ -16,11 +16,11 @@
 			<ul>
 				<li><a href="/home">Home</a></li>
 				{% if is_admin %}
-				<li><a href="/user">Users</a></li>
+				<li><a href="/user">Admin</a></li>
 				{% endif %}
 				<li><a href="/send">Share Files</a></li>
 				<li><a href="/active">Active Users</a></li>
-				<li><a href="/files">Files</a></li>
+				<li><a href="/files">Shared Files</a></li>
 				<li><a href="/logout">Logout</a></li>
 			</ul>
 		</nav>
@@ -29,7 +29,7 @@
 		<h1>Hello {{ name }}</h1>
 		<h1>Data Encryption &amp; Decryption App</h1>
 		<p>Securely encrypt and decrypt your sensitive data with this easy-to-use application.</p>
-		<a href="#" class="button">Get Started</a>
+		<a href="/share" class="button">Get Started</a>
 		<section>
 			<h2>How it works</h2>
 			<p>Simply enter your text or upload a file, choose your encryption method, and click "Encrypt" to secure your data. To decrypt, just upload your encrypted file and click "Decrypt".</p>

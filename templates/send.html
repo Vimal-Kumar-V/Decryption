@@ -9,18 +9,16 @@
     <link href="static/styles/send.css" rel="stylesheet"/>
 </head>
 <body>
-        {% if notification %}
-        <p> {{ notification }}</p>
-        {% endif %}
 <header>
     <nav>
         <ul>
             <li><a href="/home">Home</a></li>
             {% if is_admin %}
-            <li><a href="/user">Users</a></li>
+            <li><a href="/user">Admin</a></li>
             {% endif %}
             <li><a href="/send">Share Files</a></li>
             <li><a href="/active">Active Users</a></li>
+            <li><a href="/files">Shared Files</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
