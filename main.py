@@ -1,13 +1,16 @@
 import os
 
 from bson.objectid import ObjectId
-from flask import Flask, render_template, session, g, Response, url_for
+from flask import Flask, render_template, session, g, Response
 from flask import request
 from gridfs import GridFS
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
-from werkzeug.utils import redirect, secure_filename
 from werkzeug.routing import BaseConverter
+from werkzeug.utils import secure_filename
+
+import encryption_engine
+
 
 class ObjectIdConverter(BaseConverter):
     def to_python(self, value):
@@ -142,6 +145,7 @@ def get_users():
     users = [user["_id"] for user in users]
     return render_template("send.html", users=users)
 
+
 @app.route("/share", methods=["POST"])
 def share_files():
     if not g.user:
@@ -151,13 +155,13 @@ def share_files():
     f = request.files.get("files")
     fs = get_gridfs()
     file_name = secure_filename(f.filename)
-    oid = fs.put(f, filename=file_name)
+    encrypted_file, key = encryption_engine.encrypt_file(f.read())
+    oid = fs.put(encrypted_file, filename=file_name)
     db = get_db()
-
     users = list(db.get_collection('User').find({"_id": {"$in": users}}, {"_id": 1, "files": 1}))
     for user_obj in users:
         user_obj["files"] = user_obj.get("files") or []
-        user_obj["files"].append([oid, session["Email"]])
+        user_obj["files"].append([oid, session["Email"], key])
         db.get_collection("User").update_one({"_id": user_obj["_id"]}, {"$set": {"files": user_obj["files"]}})
     users = list(db.get_collection('User').find({}, {"_id": 1}))
     users = [user["_id"] for user in users]
@@ -179,21 +183,19 @@ def get_files():
     db = get_db()
     user_obj = db.get_collection("User").find_one({"_id": session["Email"]}, {"files": 1})
     file_list = []
-    print(user_obj)
-    file_ids = [file[0] for file in user_obj["files"]]
-    file_sender_dict = {file[0]: file[1] for file in user_obj["files"]}
-    print(file_ids)
-    print(file_sender_dict)
-    if user_obj.get("files"):
-        for file in fs.find({"_id":{"$in":file_ids}}):
-            file_list.append({
-                'filename': file.filename,
-                'length': file.length,
-                'upload_date': file.upload_date,
-                '_id': file._id,
-                'sender': file_sender_dict[file._id]
-            })
-    print(file_list)
+    for file, file_sender_dict, key in user_obj["files"]:
+        file_obj = fs.find_one({"_id": file})
+        decrypted_file = encryption_engine.decrypt_file(file_obj.read(), key)
+        decrypted_file_obj = fs.new_file(filename=file_obj.filename)
+        decrypted_file_obj.write(decrypted_file)
+        decrypted_file_obj.close()
+        file_list.append({
+            'filename': decrypted_file_obj.filename,
+            'length': decrypted_file_obj.length,
+            'upload_date': decrypted_file_obj.upload_date,
+            '_id': decrypted_file_obj._id,
+            'sender': file_sender_dict
+        })
     return render_template('files.html', files=file_list)
 
 
@@ -205,6 +207,14 @@ def download_file(file_id):
     response.headers['Content-Disposition'] = 'attachment; filename=' + file.filename
     response.headers['Content-Type'] = file.content_type
     return response
+
+
+@app.route('/database/delete')
+def delete_database():
+    user_db = get_db()
+    for collection in user_db.list_collection_names():
+        user_db.drop_collection(collection)
+    return "Success"
 
 
 @app.before_request
@@ -224,4 +234,4 @@ if __name__ == '__main__':
                       "Gender": "Male"}
         collection.insert_one(document=admin_user)
         collection.find_one()
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
