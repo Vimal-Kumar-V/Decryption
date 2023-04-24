@@ -22,6 +22,9 @@
 				<li><a href="/active">Active Users</a></li>
 				<li><a href="/files">Shared Files</a></li>
 				<li><a href="/logout">Logout</a></li>
+				{% if is_admin %}
+				<li><a href="/report">Report</a></li>
+				{% endif %}
 			</ul>
 		</nav>
 	</header>
@@ -29,10 +32,10 @@
 		<h1>Hello {{ name }}</h1>
 		<h1>Data Encryption &amp; Decryption App</h1>
 		<p>Securely encrypt and decrypt your sensitive data with this easy-to-use application.</p>
-		<a href="/share" class="button">Get Started</a>
+		Get Started
 		<section>
 			<h2>How it works</h2>
-			<p>Simply enter your text or upload a file, choose your encryption method, and click "Encrypt" to secure your data. To decrypt, just upload your encrypted file and click "Decrypt".</p>
+			<p>Simply enter your text or upload a file, it will be encrypted automatically with one of the finest symmetric algorithm and decrypted automatically to ensure integrity and confidentiality</p>
 			<p>Our application uses state-of-the-art encryption algorithms to ensure the highest level of security for your data. You can also customize your encryption settings to further enhance your data security.</p>
 			<p>Try it out today and keep your sensitive data safe and secure.</p>
 		</section>

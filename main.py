@@ -1,5 +1,6 @@
 import os
 
+from datetime import datetime
 from bson.objectid import ObjectId
 from flask import Flask, render_template, session, g, Response
 from flask import request
@@ -183,16 +184,18 @@ def get_files():
     db = get_db()
     user_obj = db.get_collection("User").find_one({"_id": session["Email"]}, {"files": 1})
     file_list = []
-    for file, file_sender_dict, key in user_obj["files"]:
+    for file, file_sender_dict, key in user_obj.get("files", []):
         file_obj = fs.find_one({"_id": file})
         decrypted_file = encryption_engine.decrypt_file(file_obj.read(), key)
         decrypted_file_obj = fs.new_file(filename=file_obj.filename)
         decrypted_file_obj.write(decrypted_file)
         decrypted_file_obj.close()
+        required_date_format: datetime = decrypted_file_obj.upload_date
+        print("*"*10 + f"{required_date_format}, {type(required_date_format)}")
         file_list.append({
             'filename': decrypted_file_obj.filename,
             'length': decrypted_file_obj.length,
-            'upload_date': decrypted_file_obj.upload_date,
+            'upload_date': required_date_format.strftime("%d:%m:%Y, %H:%M:%S"),
             '_id': decrypted_file_obj._id,
             'sender': file_sender_dict
         })
@@ -215,6 +218,33 @@ def delete_database():
     for collection in user_db.list_collection_names():
         user_db.drop_collection(collection)
     return "Success"
+
+
+@app.route('/report')
+def get_report():
+    if not g.user:
+        return render_template("login.html", error="Session Expired")
+    fs = get_gridfs()
+    db = get_db()
+    user_obj = db.get_collection("User").find_one({"_id": session["Email"]}, {"files": 1})
+    file_list = []
+    count = 1
+    for file, file_sender_dict, key in user_obj["files"]:
+        file_obj = fs.find_one({"_id": file})
+        decrypted_file = encryption_engine.decrypt_file(file_obj.read(), key)
+        decrypted_file_obj = fs.new_file(filename=file_obj.filename)
+        decrypted_file_obj.write(decrypted_file)
+        decrypted_file_obj.close()
+        required_date_format: datetime = decrypted_file_obj.upload_date
+        file_list.append({
+            'serial': count,
+            'filename': decrypted_file_obj.filename,
+            'upload_date': required_date_format.strftime("%d:%m:%Y"),
+            'sender': file_sender_dict,
+            'receiver': g.user
+        })
+        count += 1
+    return render_template('reports.html', files=file_list)
 
 
 @app.before_request

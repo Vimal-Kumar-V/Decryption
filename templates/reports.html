@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Reports</title>
+	<style>
+		body {
+			background-color: #DCE3F3;
+			font-family: Arial, Helvetica, sans-serif;
+			color: #333;
+		}
+		h1 {
+			color: #2C3E50;
+			text-align: center;
+			margin-top: 50px;
+		}
+		table {
+			margin: auto;
+			border-collapse: collapse;
+			border: 2px solid #2C3E50;
+			box-shadow: 3px 3px 5px #ccc;
+		}
+		th, td {
+			padding: 10px;
+			text-align: center;
+			border: 1px solid #2C3E50;
+		}
+		a {
+			color: #2980b9;
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+	<h1>Report</h1>
+	<table>
+		<tr>
+			<th>S.No</th>
+			<th>Filename</th>
+			<th>Date</th>
+			<th>Sender</th>
+            <th>Receiver</th>
+		</tr>
+		{% for file in files %}
+		<tr>
+			<td>{{ file.serial }} </td>
+			<td>{{ file.filename }}</td>
+			<td>{{ file.upload_date }}</td>
+			<td>{{ file.sender }}</td>
+            <td>{{ file.receiver }} </td>
+		</tr>
+		{% endfor %}
+	</table>
+</body>
+</html>

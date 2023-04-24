@@ -20,6 +20,9 @@
             <li><a href="/active">Active Users</a></li>
             <li><a href="/files">Shared Files</a></li>
             <li><a href="/logout">Logout</a></li>
+            {% if is_admin %}
+            <li><a href="/report">Report</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
