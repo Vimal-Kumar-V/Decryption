@@ -39,6 +39,7 @@
 			<th>Date</th>
 			<th>Sender</th>
             <th>Receiver</th>
+			<th>Receiver Name</th>
 		</tr>
 		{% for file in files %}
 		<tr>
@@ -47,6 +48,8 @@
 			<td>{{ file.upload_date }}</td>
 			<td>{{ file.sender }}</td>
             <td>{{ file.receiver }} </td>
+			<td> {{ file.name }} </td>
+
 		</tr>
 		{% endfor %}
 	</table>

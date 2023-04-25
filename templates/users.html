@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="author" content="Boobalan">
     <meta name="description" content="This will give the user page for admin">
-    <meta http-equiv="content-security-policy" content="default-src 'self'">
     <link href="static/styles/user.css" rel="stylesheet"/>
 </head>
 <body>
@@ -18,6 +17,8 @@
         <th>Status</th>
         <th>Domain</th>
         <th>Purpose</th>
+        <th> Delete User</th>
+        <th> Update User</th>
     </tr>
     </thead>
     <tbody>
@@ -33,13 +34,19 @@
         {% endif %}
         <td>{{ user['Domain'] }}</td>
         <td>{{ user['Purpose'] }}</td>
-        <td>
-            <select>
-                <option value="Admin">Admin</option>
-                <option value="User" selected>User</option>
-            </select>
-            <button>Update</button>
+        <td> <div class='container'>
+            {% if user['Email'] != "balu@gmail.com" %}
+    <a href="/block-user/{{ user['Email'] }}">
+      <button class="btn btn-default" id="delete">Delete</button>
+    </a>
         </td>
+        {% endif %}
+        <td>
+            <a href="/update-user/{{ user['Email'] }}">
+      <button class="btn btn-default" id="update">Update</button>
+    </a>
+</div></td>
+
     </tr>
     {% endfor %}
     </tbody>

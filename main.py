@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from bson.objectid import ObjectId
 from flask import Flask, render_template, session, g, Response
-from flask import request
+from flask import request, redirect
 from gridfs import GridFS
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
@@ -241,10 +241,29 @@ def get_report():
             'filename': decrypted_file_obj.filename,
             'upload_date': required_date_format.strftime("%d:%m:%Y"),
             'sender': file_sender_dict,
-            'receiver': g.user
+            'receiver': g.email,
+            'name': g.user
         })
         count += 1
     return render_template('reports.html', files=file_list)
+
+
+@app.route('/block-user/<email>')
+def block_user(email):
+    print(request.args, request.form, email, request.view_args)
+    db = get_db()
+    user_collection = db.get_collection("User").delete_one({"_id": email})
+    return redirect("/user")
+
+
+@app.route('/update-user/<email>')
+def update_user(email):
+    print(request.args, request.form, email, request.view_args)
+    db = get_db()
+    user_type = db.get_collection("User").find_one({"_id": email}).get("UserType")
+    update_value = "Admin" if user_type != "Admin" else "User"
+    user_collection = db.get_collection("User").update_one({"_id": email}, update={"$set":{"UserType": update_value}})
+    return redirect("/user")
 
 
 @app.before_request
@@ -252,6 +271,7 @@ def before_request():
     g.user = None
     if "User" in session:
         g.user = session["User"]
+        g.email = session["Email"]
 
 
 if __name__ == '__main__':
